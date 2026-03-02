@@ -1,8 +1,6 @@
-
 import os
-import threading
 import logging
-from flask import Flask
+from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -14,31 +12,23 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
-# ---------------- FLASK SERVER ---------------- #
+# ---------------- CONFIG ---------------- #
 
-server = Flask(__name__)
+TOKEN = os.environ.get("BOT_TOKEN")
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")  # Koyeb app URL
 
-@server.route("/")
-def home():
-    return "Bot is Live & Healthy!", 200
-
-
-def run_flask():
-    port = int(os.environ.get("PORT", 8080))
-    server.run(host="0.0.0.0", port=port)
-
-
-# ---------------- BOT SETUP ---------------- #
+API_URL, CREATOR_NAME, CHOOSE_TYPE = range(3)
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
 
-TOKEN = os.environ.get("BOT_TOKEN")
+# ---------------- FLASK APP ---------------- #
 
-API_URL, CREATOR_NAME, CHOOSE_TYPE = range(3)
+app = Flask(__name__)
 
+telegram_app = Application.builder().token(TOKEN).build()
 
 # ---------------- HANDLERS ---------------- #
 
@@ -47,17 +37,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🔥 Ram's Ultimate Extractor V7\n\nUse /extract to begin."
     )
 
-
 async def extract_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔗 Send API URL:")
     return API_URL
-
 
 async def get_api_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["api_url"] = update.message.text.strip()
     await update.message.reply_text("✍️ Send Creator Name:")
     return CREATOR_NAME
-
 
 async def get_creator_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["creator"] = update.message.text.strip()
@@ -73,7 +60,6 @@ async def get_creator_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return CHOOSE_TYPE
 
-
 async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -83,33 +69,35 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     return ConversationHandler.END
 
+# ---------------- REGISTER HANDLERS ---------------- #
 
-# ---------------- MAIN ---------------- #
+conv_handler = ConversationHandler(
+    entry_points=[CommandHandler("extract", extract_start)],
+    states={
+        API_URL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_api_url)],
+        CREATOR_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_creator_name)],
+        CHOOSE_TYPE: [CallbackQueryHandler(handle_choice)],
+    },
+    fallbacks=[CommandHandler("cancel", lambda u, c: ConversationHandler.END)],
+)
 
-def main():
-    app = Application.builder().token(TOKEN).build()
+telegram_app.add_handler(CommandHandler("start", start))
+telegram_app.add_handler(conv_handler)
 
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("extract", extract_start)],
-        states={
-            API_URL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_api_url)],
-            CREATOR_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_creator_name)],
-            CHOOSE_TYPE: [CallbackQueryHandler(handle_choice)],
-        },
-        fallbacks=[CommandHandler("cancel", lambda u, c: ConversationHandler.END)],
-    )
+# ---------------- WEBHOOK ROUTE ---------------- #
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(conv_handler)
+@app.route("/")
+def health():
+    return "Bot is Live & Healthy!", 200
 
-    app.run_polling(drop_pending_updates=True)
+@app.route(f"/{TOKEN}", methods=["POST"])
+async def webhook():
+    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
+    await telegram_app.process_update(update)
+    return "ok", 200
 
-
-# ---------------- START ---------------- #
+# ---------------- STARTUP ---------------- #
 
 if __name__ == "__main__":
-    # Flask background me
-    threading.Thread(target=run_flask, daemon=True).start()
-
-    # Telegram bot main thread me
-    main()
+    telegram_app.initialize()
+    telegram_app.bot.set_webhook(f"{WEBHOOK_URL}/{TOKEN}")
