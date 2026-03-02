@@ -1,6 +1,11 @@
 import os
+import shutil
+import zipfile
+import asyncio
 import logging
-from flask import Flask, request
+import threading
+import gc
+from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -12,92 +17,149 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
-# ---------------- CONFIG ---------------- #
+from jupiter import json_to_html
+import cloudscraper
 
-TOKEN = os.environ.get("BOT_TOKEN")
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")  # Koyeb app URL
+# ---------------- FLASK HEALTH SERVER ---------------- #
 
-API_URL, CREATOR_NAME, CHOOSE_TYPE = range(3)
+server = Flask(__name__)
+
+@server.route("/")
+def health():
+    return "Bot is Live & Healthy!", 200
+
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    server.run(host="0.0.0.0", port=port)
+
+
+# ---------------- BOT SETUP ---------------- #
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
 
-# ---------------- FLASK APP ---------------- #
+scraper = cloudscraper.create_scraper(
+    browser={"browser": "chrome", "platform": "android", "desktop": False}
+)
 
-app = Flask(__name__)
+TOKEN = os.environ.get("BOT_TOKEN")  # 🔥 secure
 
-telegram_app = Application.builder().token(TOKEN).build()
+HEADERS = {
+    "Client-Service": "Appx",
+    "Auth-Key": "appxapi",
+    "source": "website",
+    "User-ID": "82093",
+}
 
-# ---------------- HANDLERS ---------------- #
+API_URL, CREATOR_NAME, CHOOSE_TYPE, SELECT_ITEM, UPLOAD_CHOICE = range(5)
+
+# ---------------- WORKER FUNCTIONS ---------------- #
+
+def save_html_sync(test_data, title, out_path, creator):
+    try:
+        html = json_to_html(test_data, title, creator)
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(html)
+        return True
+    except:
+        return False
+
+
+async def explore_recursively(api_url, course_id, parent_id, tests_list, current_path="Main"):
+    url = f"{api_url}/get/folder_contentsv3?course_id={course_id}&parent_id={parent_id}&start=0"
+    try:
+        resp = scraper.get(url, headers=HEADERS, timeout=15).json()
+        for item in resp.get("data", []):
+            if item.get("material_type") == "TEST":
+                tid = item.get("quiz_title_id")
+                if tid and tid != "-1":
+                    t_url = f"{api_url}/get/test_title_by_id?id={tid}&userid=82093"
+                    d = scraper.get(t_url, headers=HEADERS, timeout=15).json().get("data", {})
+                    if d.get("test_questions_url"):
+                        tests_list.append({
+                            "title": d["title"],
+                            "link": d["test_questions_url"],
+                            "folder": current_path,
+                        })
+            elif item.get("material_type") == "FOLDER":
+                new_path = item.get("folder_name", "SubFolder")
+                await explore_recursively(api_url, course_id, item.get("id"), tests_list, new_path)
+    except:
+        pass
+
+
+# ---------------- BOT HANDLERS ---------------- #
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🔥 Ram's Ultimate Extractor V7\n\nUse /extract to begin."
+        "🔥 *Ram's Ultimate Extractor V7*\n\nUse /extract to begin.",
+        parse_mode="Markdown"
     )
 
+
 async def extract_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🔗 Send API URL:")
+    await update.message.reply_text("🔗 API URL bhej:")
     return API_URL
 
+
 async def get_api_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data["api_url"] = update.message.text.strip()
-    await update.message.reply_text("✍️ Send Creator Name:")
+    context.user_data["api_url"] = (
+        f"https://{update.message.text.strip()}"
+        if "http" not in update.message.text
+        else update.message.text.strip()
+    )
+    await update.message.reply_text("✍️ Creator Name?")
     return CREATOR_NAME
+
 
 async def get_creator_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["creator"] = update.message.text.strip()
-
-    keyboard = [
+    kb = [
         [InlineKeyboardButton("📚 Course", callback_data="type_course")],
         [InlineKeyboardButton("🎯 Series", callback_data="type_series")],
     ]
-
     await update.message.reply_text(
-        "Select Mode:",
-        reply_markup=InlineKeyboardMarkup(keyboard),
+        "Select Extraction Type:",
+        reply_markup=InlineKeyboardMarkup(kb),
     )
     return CHOOSE_TYPE
+
 
 async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
     choice = query.data.split("_")[1]
-    await query.edit_message_text(f"✅ Mode selected: {choice.upper()}")
-
+    context.user_data["type"] = choice
+    await query.edit_message_text(f"📡 Scanning {choice.upper()}...")
     return ConversationHandler.END
 
-# ---------------- REGISTER HANDLERS ---------------- #
 
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("extract", extract_start)],
-    states={
-        API_URL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_api_url)],
-        CREATOR_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_creator_name)],
-        CHOOSE_TYPE: [CallbackQueryHandler(handle_choice)],
-    },
-    fallbacks=[CommandHandler("cancel", lambda u, c: ConversationHandler.END)],
-)
+# ---------------- MAIN ---------------- #
 
-telegram_app.add_handler(CommandHandler("start", start))
-telegram_app.add_handler(conv_handler)
+def main():
+    app = Application.builder().token(TOKEN).build()
 
-# ---------------- WEBHOOK ROUTE ---------------- #
+    conv = ConversationHandler(
+        entry_points=[CommandHandler("extract", extract_start)],
+        states={
+            API_URL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_api_url)],
+            CREATOR_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_creator_name)],
+            CHOOSE_TYPE: [CallbackQueryHandler(handle_choice)],
+        },
+        fallbacks=[CommandHandler("cancel", lambda u, c: ConversationHandler.END)],
+    )
 
-@app.route("/")
-def health():
-    return "Bot is Live & Healthy!", 200
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(conv)
 
-@app.route(f"/{TOKEN}", methods=["POST"])
-async def webhook():
-    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-    await telegram_app.process_update(update)
-    return "ok", 200
+    app.run_polling(drop_pending_updates=True)
 
-# ---------------- STARTUP ---------------- #
+
+# ---------------- START ---------------- #
 
 if __name__ == "__main__":
-    telegram_app.initialize()
-    telegram_app.bot.set_webhook(f"{WEBHOOK_URL}/{TOKEN}")
+    threading.Thread(target=run_flask, daemon=True).start()
+    main()
