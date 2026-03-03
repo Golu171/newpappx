@@ -242,6 +242,7 @@ async def start_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
+
     app = Application.builder().token(TOKEN).build()
     
     conv = ConversationHandler(
@@ -257,11 +258,13 @@ def main():
     )
     
     app.add_handler(CommandHandler("start", start))
-app.add_handler(conv)
+    app.add_handler(conv)
 
-# 409 Conflict Fix (Koyeb duplicate polling issue)
-app.bot.delete_webhook(drop_pending_updates=True)
+    # ✅ 409 Conflict Fix
+    app.bot.delete_webhook(drop_pending_updates=True)
 
-app.run_polling(drop_pending_updates=True)
+    app.run_polling(drop_pending_updates=True)
 
-if __name__ == '__main__': main()
+
+if __name__ == '__main__':
+    main()
