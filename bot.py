@@ -25,7 +25,7 @@ def run_flask():
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
 
-TOKEN = "8209964976:AAElJqHb4sEFRFTq_4Ek2I-R4XsYlVAcOyM"
+TOKEN = os.environ.get("BOT_TOKEN")
 HEADERS = {
     "Client-Service": "Appx", "Auth-Key": "appxapi", "source": "website", "User-ID": "82093",
 }
@@ -82,7 +82,7 @@ async def get_api_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def get_creator_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['creator'] = update.message.text.strip()
-    kb = [[InlineKeyboardButton("📚 Mode 1 (Course)", callback_data="type_course")], [InlineKeyboardButton("🎯 Mode 2 (Series)", callback_data="type_series")]]
+    kb = InlineKeyboardButton("📚 Mode 1 (Course)", callback_data="type_course")], [InlineKeyboardButton("🎯 Mode 2 (Series)", callback_data="type_series")
     await update.message.reply_text("🤔 Select Extraction Type:", reply_markup=InlineKeyboardMarkup(kb))
     return CHOOSE_TYPE
 
@@ -104,7 +104,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             items = [(ts["id"], ts["title"]) for ts in r.get("data", [])]
 
         context.user_data['item_names'] = {str(i[0]): i[1] for i in items}
-        btns = [[InlineKeyboardButton(i[1][:40], callback_data=f"sel_{i[0]}")] for i in items[:30]]
+        btns = InlineKeyboardButton(i[1][:40], callback_data=f"sel_{i[0]}")] for i in items[:30
         await query.message.reply_text("🎯 Target select kar:", reply_markup=InlineKeyboardMarkup(btns))
         return SELECT_ITEM
     except Exception as e:
@@ -242,8 +242,9 @@ async def start_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
+
     app = Application.builder().token(TOKEN).build()
-    
+
     conv = ConversationHandler(
         entry_points=[CommandHandler('extract', extract_start)],
         states={
@@ -253,11 +254,21 @@ def main():
             SELECT_ITEM: [CallbackQueryHandler(item_selected)],
             UPLOAD_CHOICE: [CallbackQueryHandler(start_upload)],
         },
-        fallbacks=[CommandHandler('cancel', lambda u,c: ConversationHandler.END)],
+        fallbacks=[CommandHandler('cancel', lambda u, c: ConversationHandler.END)],
     )
-    
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(conv)
+
+    # Koyeb polling conflict fix
+    async def clear():
+        await app.bot.delete_webhook(drop_pending_updates=True)
+
+    import asyncio
+    asyncio.get_event_loop().run_until_complete(clear())
+
     app.run_polling(drop_pending_updates=True)
 
-if __name__ == '__main__': main()
+
+if __name__ == "__main__":
+    main()
