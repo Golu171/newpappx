@@ -226,10 +226,10 @@ async def start_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text(f"📂 *Topic:* `{folder_name}`", parse_mode='Markdown')
             for t in tests:
                 caption = (
-                    f"🕉 *Jai Shree Ram*\n"
-                    f"🏛 *Coaching:* {creator}\n"
-                    f"📁 *Folder:* {t['folder']}\n"
-                    f"✅ *Test:* {t['title']}"
+                    f"🕉 Jai Shree Ram\n"
+                    f"🏛 Coaching: {creator}\n"
+                    f"📁 Folder: {t['folder']}\n"
+                    f"✅ Test: {t['title']}"
                 )
                 try:
                     await query.message.reply_document(document=open(t['path'], 'rb'), caption=caption)
