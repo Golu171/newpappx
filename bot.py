@@ -139,7 +139,7 @@ async def item_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     })
 
     if not items:
-    await query.edit_message_text("❌ No courses / series found.")
+        await query.edit_message_text("❌ No courses / series found.")
     return ConversationHandler.END
 
     context.user_data['all_tests'] = all_tests
