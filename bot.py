@@ -255,7 +255,6 @@ def main():
             UPLOAD_CHOICE: [CallbackQueryHandler(start_upload)],
         },
         fallbacks=[CommandHandler('cancel', lambda u, c: ConversationHandler.END)],
-        per_message=True
     )
     
     app.add_handler(CommandHandler("start", start))
