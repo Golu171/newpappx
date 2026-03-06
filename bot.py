@@ -138,8 +138,8 @@ async def item_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         'folder': s['subject_name']
                     })
 
-    if not items:
-        await query.edit_message_text("❌ No courses / series found.")
+    if not all_tests:
+    await query.edit_message_text("❌ No tests found.")
     return ConversationHandler.END
 
     context.user_data['all_tests'] = all_tests
