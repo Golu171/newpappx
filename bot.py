@@ -254,14 +254,19 @@ def main():
             SELECT_ITEM: [CallbackQueryHandler(item_selected)],
             UPLOAD_CHOICE: [CallbackQueryHandler(start_upload)],
         },
-        fallbacks=[CommandHandler('cancel', lambda u,c: ConversationHandler.END)],
+        fallbacks=[CommandHandler('cancel', lambda u, c: ConversationHandler.END)],
+        per_message=True
     )
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(conv)
 
-    # ✅ 409 Conflict Fix
-    app.bot.delete_webhook(drop_pending_updates=True)
+    # ✅ webhook clear
+    async def clear():
+        await app.bot.delete_webhook(drop_pending_updates=True)
+
+    import asyncio
+    asyncio.get_event_loop().run_until_complete(clear())
 
     app.run_polling(drop_pending_updates=True)
 
