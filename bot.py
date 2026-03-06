@@ -25,7 +25,7 @@ def run_flask():
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
 
-TOKEN = "8209964976:AAElJqHb4sEFRFTq_4Ek2I-R4XsYlVAcOyM"
+TOKEN = os.environ.get("BOT_TOKEN")
 HEADERS = {
     "Client-Service": "Appx", "Auth-Key": "appxapi", "source": "website", "User-ID": "82093",
 }
@@ -242,8 +242,9 @@ async def start_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
+
     app = Application.builder().token(TOKEN).build()
-    
+
     conv = ConversationHandler(
         entry_points=[CommandHandler('extract', extract_start)],
         states={
@@ -253,11 +254,21 @@ def main():
             SELECT_ITEM: [CallbackQueryHandler(item_selected)],
             UPLOAD_CHOICE: [CallbackQueryHandler(start_upload)],
         },
-        fallbacks=[CommandHandler('cancel', lambda u,c: ConversationHandler.END)],
+        fallbacks=[CommandHandler('cancel', lambda u, c: ConversationHandler.END)],
     )
-    
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(conv)
+
+    # Koyeb polling conflict fix
+    async def clear():
+        await app.bot.delete_webhook(drop_pending_updates=True)
+
+    import asyncio
+    asyncio.get_event_loop().run_until_complete(clear())
+
     app.run_polling(drop_pending_updates=True)
 
-if __name__ == '__main__': main()
+
+if __name__ == "__main__":
+    main()
