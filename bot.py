@@ -46,25 +46,40 @@ def save_html_sync(test_data, title, out_path, creator):
 
 async def explore_recursively(api_url, course_id, parent_id, tests_list, current_path="Main"):
     url = f"{api_url}/get/folder_contentsv3?course_id={course_id}&parent_id={parent_id}&start=0"
+
     try:
         resp = scraper.get(url, headers=HEADERS, timeout=15).json()
+
         for item in resp.get("data", []):
+
             if item.get("material_type") == "TEST":
                 tid = item.get("quiz_title_id")
+
                 if tid and tid != "-1":
                     t_url = f"{api_url}/get/test_title_by_id?id={tid}&userid=82093"
                     d = scraper.get(t_url, headers=HEADERS, timeout=15).json().get("data", {})
+
                     if d.get("test_questions_url"):
-                        # Hum path track kar rahe hain folder structure ke liye
                         tests_list.append({
-                            'title': d['title'], 
-                            'link': d['test_questions_url'], 
-                            'folder': current_path
+                            "title": d["title"],
+                            "link": d["test_questions_url"],
+                            "folder": current_path
                         })
+
             elif item.get("material_type") == "FOLDER":
-                new_path = item.get("folder_name", "SubFolder")
-                await explore_recursively(api_url, course_id, item.get("id"), tests_list, new_path)
-    except: pass
+                folder_name = item.get("folder_name", "SubFolder")
+                new_path = f"{current_path}/{folder_name}"
+
+                await explore_recursively(
+                    api_url,
+                    course_id,
+                    item.get("id"),
+                    tests_list,
+                    new_path
+                )
+
+    except Exception as e:
+        print("Folder scan error:", e)
 
 # ---------------- BOT HANDLERS ---------------- #
 
