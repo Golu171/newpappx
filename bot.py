@@ -98,11 +98,13 @@ async def get_creator_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+
     choice = query.data.split("_")[1]
     context.user_data['type'] = choice
     api_url = context.user_data['api_url']
-    
+
     await query.edit_message_text(f"📡 Scanning {choice.upper()}... wait kar bhai.")
+
     try:
         if choice == "course":
             p = {"search_term": "TEST SERIES", "user_id": "-1", "screen_name": "Dashboard"}
@@ -114,14 +116,19 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         context.user_data['item_names'] = {str(i[0]): i[1] for i in items}
 
-btns = [[InlineKeyboardButton(i[1][:40], callback_data=f"sel_{i[0]}")] for i in items[:30]]
+        btns = [
+            [InlineKeyboardButton(i[1][:40], callback_data=f"sel_{i[0]}")]
+            for i in items[:30]
+        ]
 
-await query.message.reply_text(
-    "🎯 Target select kar:",
-    reply_markup=InlineKeyboardMarkup(btns)
-)
+        await query.message.reply_text(
+            "🎯 Target select kar:",
+            reply_markup=InlineKeyboardMarkup(btns)
+        )
 
-return SELECT_ITEM   except Exception as e:
+        return SELECT_ITEM
+
+    except Exception as e:
         await query.message.reply_text(f"❌ Error: {e}")
         return ConversationHandler.END
 
