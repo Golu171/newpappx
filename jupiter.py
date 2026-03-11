@@ -220,7 +220,7 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
             if(((state.mode === 'practice' && state.ans[state.current] !== null) || state.isSub)) {{
                 h += `<div class="explanation-box" style="display:block;">
                     <div style="font-weight:800; color:#92400E; margin-bottom:10px;"><i class="fas fa-lightbulb"></i> Explanation</div>
-                    <div style="font-size:14px; line-height:1.6; color:white;">${{q.sol}}</div>
+                    <div style="font-size:14px; line-height:1.6; color:black;">${{q.sol}}</div>
                 </div>`;
             }}
             h += `</div>`;
