@@ -113,10 +113,15 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             items = [(ts["id"], ts["title"]) for ts in r.get("data", [])]
 
         context.user_data['item_names'] = {str(i[0]): i[1] for i in items}
-        btns = InlineKeyboardButton(i[1][:40], callback_data=f"sel_{i[0]}")] for i in items[:30
-        await query.message.reply_text("🎯 Target select kar:", reply_markup=InlineKeyboardMarkup(btns))
-        return SELECT_ITEM
-    except Exception as e:
+
+btns = [[InlineKeyboardButton(i[1][:40], callback_data=f"sel_{i[0]}")] for i in items[:30]]
+
+await query.message.reply_text(
+    "🎯 Target select kar:",
+    reply_markup=InlineKeyboardMarkup(btns)
+)
+
+return SELECT_ITEM   except Exception as e:
         await query.message.reply_text(f"❌ Error: {e}")
         return ConversationHandler.END
 
