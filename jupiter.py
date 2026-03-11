@@ -62,7 +62,7 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
         .option-btn.correct .option-indicator {{ background: var(--success); color: white; border: none; }}
         .option-btn.incorrect {{ background: var(--danger-bg); border-color: var(--danger); }}
         .option-btn.incorrect .option-indicator {{ background: var(--danger); color: white; border: none; }}
-        .explanation-box {{ display: none; background: var(--warning-bg); border-left: 5px solid var(--warning); border-radius: 0 16px 16px 0; padding: 20px; margin-top: 24px; animation: slideDown 0.4s ease; }}
+        .explanation-box {{ display: none; background: #ffffff; border-left: 5px solid #F59E0B; border-radius: 0 16px 16px 0; padding: 20px; margin-top: 24px; animation: slideDown 0.4s ease; }}
         
         .nav-controls {{ position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-white); padding: 16px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); display: flex; gap: 12px; z-index: 90; }}
         .nav-btn {{ flex: 1; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }}
