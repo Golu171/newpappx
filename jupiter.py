@@ -77,7 +77,7 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
         .stat-val {{ font-size: 34px; font-weight: 800; color: var(--text-dark); }}
 
         .question-nav-toggle {{ position: fixed; bottom: 105px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; z-index: 85; box-shadow: 0 8px 25px var(--primary-glow); }}
-        .question-nav-panel {{ position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-white); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); z-index: 95; transform: translateY(100%); transition: 0.4s; padding: 24px; visibility: hidden; }}
+        .question-nav-panel {{ position: fixed; bottom: 0; left: 0; right: 0; height: 35vh;max-height: 35vh; overflow-y: auto; background: var(--bg-white); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); z-index: 95; transform: translateY(110%); transition: transform 0.35s ease; padding: 18px; visibility: hidden; }}
         .question-nav-panel.open {{ transform: translateY(0); visibility: visible; }}
         .question-grid {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }}
         .question-nav-item {{ aspect-ratio: 1; border: 3px solid var(--border); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; color: var(--text-light); }}
