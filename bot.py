@@ -82,8 +82,17 @@ async def get_api_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def get_creator_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['creator'] = update.message.text.strip()
-    kb = InlineKeyboardButton("📚 Mode 1 (Course)", callback_data="type_course")], [InlineKeyboardButton("🎯 Mode 2 (Series)", callback_data="type_series")
-    await update.message.reply_text("🤔 Select Extraction Type:", reply_markup=InlineKeyboardMarkup(kb))
+
+    kb = [
+        [InlineKeyboardButton("📚 Mode 1 (Course)", callback_data="type_course")],
+        [InlineKeyboardButton("🎯 Mode 2 (Series)", callback_data="type_series")]
+    ]
+
+    await update.message.reply_text(
+        "🤔 Select Extraction Type:",
+        reply_markup=InlineKeyboardMarkup(kb)
+    )
+
     return CHOOSE_TYPE
 
 async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
