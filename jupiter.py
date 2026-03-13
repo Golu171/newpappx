@@ -29,20 +29,20 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
             --bg-light: #0F172A; --bg-white: #1E293B; --text-dark: #F1F5F9; --text-light: #94A3B8; --border: #334155;
         }}
         body {{ font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%); min-height: 100vh; overflow: hidden; transition: all 0.3s ease; }}
-        
-        /* Language Toggle Classes */
-        .lang-hi span {{ display: none; }} /* Default: hide hindi inside span if any */
-        [data-lang="hi"] .en-txt {{ display: none; }}
-        [data-lang="en"] .hi-txt {{ display: none; }}
+        .scrollable::-webkit-scrollbar {{ width: 6px; }}
+        .scrollable::-webkit-scrollbar-thumb {{ background: var(--primary); border-radius: 10px; }}
 
         #modeSelection {{ position: fixed; inset: 0; background: inherit; display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }}
         .mode-container {{ background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 28px; padding: 40px 30px; max-width: 520px; width: 100%; box-shadow: var(--shadow-lg); text-align: center; }}
+        .mode-header {{ text-align: center; margin-bottom: 32px; }}
         .mode-header-icon {{ width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white; animation: float 3s ease-in-out infinite; }}
         @keyframes float {{ 0%, 100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-8px); }} }}
         
         .mode-cards {{ display: grid; gap: 16px; margin-bottom: 24px; }}
         .mode-card {{ background: var(--bg-light); border: 3px solid var(--border); border-radius: 18px; padding: 18px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; text-align: left; }}
         .mode-card.selected {{ border-color: var(--primary); background: rgba(99,102,241,0.1); transform: translateY(-2px); }}
+        .mode-icon {{ width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }}
+        .exam-mode .mode-icon {{ background: #EF4444; }} .practice-mode .mode-icon {{ background: #10B981; }}
         
         #quizContainer {{ display: none; position: fixed; inset: 0; background: var(--bg-light); overflow: hidden; }}
         .quiz-header {{ position: fixed; top: 0; left: 0; right: 0; background: var(--bg-white); box-shadow: var(--shadow-sm); z-index: 100; padding: 16px 20px; }}
@@ -51,33 +51,46 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
         .progress-bar-container {{ height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; }}
         .progress-bar {{ height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent)); transition: width 0.4s ease; }}
         
-        /* Section Badge & Lang Toggle */
-        .sec-badge {{ font-size: 10px; font-weight: 800; color: var(--primary); background: var(--primary-glow); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }}
-        .lang-toggle-btn {{ background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 12px; }}
-
         .question-section {{ position: fixed; top: 145px; left: 0; right: 0; bottom: 85px; overflow-y: auto; padding: 20px; }}
         .question-card {{ background: var(--bg-white); border-radius: 24px; padding: 28px; box-shadow: var(--shadow-md); max-width: 800px; margin: 0 auto; }}
+        .question-number {{ display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--primary); background: var(--primary-glow); padding: 8px 16px; border-radius: 25px; margin-bottom: 20px; }}
+        .question-text {{ font-size: 17px; font-weight: 600; color: var(--text-dark); line-height: 1.8; margin-bottom: 24px; white-space: pre-wrap; word-wrap: break-word; }}
         .option-btn {{ width: 100%; padding: 18px 20px; background: var(--bg-light); border: 3px solid var(--border); border-radius: 16px; text-align: left; font-size: 15px; color: var(--text-dark); cursor: pointer; display: flex; align-items: flex-start; gap: 14px; transition: 0.3s; margin-bottom: 14px; line-height: 1.6; }}
+        .option-indicator {{ min-width: 36px; height: 36px; border-radius: 50%; background: var(--bg-white); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; }}
+        .option-btn.selected {{ background: var(--primary-glow); border-color: var(--primary); }}
+        .option-btn.correct {{ background: var(--success-bg); border-color: var(--success); }}
+        .option-btn.correct .option-indicator {{ background: var(--success); color: white; border: none; }}
+        .option-btn.incorrect {{ background: var(--danger-bg); border-color: var(--danger); }}
+        .option-btn.incorrect .option-indicator {{ background: var(--danger); color: white; border: none; }}
+        .explanation-box {{ display: none; background: #ffffff; border-left: 5px solid #F59E0B; border-radius: 0 16px 16px 0; padding: 20px; margin-top: 24px; animation: slideDown 0.4s ease; }}
         
         .nav-controls {{ position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-white); padding: 16px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); display: flex; gap: 12px; z-index: 90; }}
         .nav-btn {{ flex: 1; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }}
         .nav-btn.primary {{ background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }}
-        
+        .nav-btn.secondary {{ background: var(--bg-light); color: var(--text-dark); border: 2px solid var(--border); }}
+
+        #resultsContainer {{ display: none; position: fixed; inset: 0; background: var(--bg-light); overflow-y: auto; padding: 20px; z-index: 1000; text-align: center; }}
+        .results-card {{ background: var(--bg-white); border-radius: 28px; padding: 40px 30px; max-width: 600px; margin: 0 auto 20px; box-shadow: var(--shadow-lg); }}
+        .results-score {{ font-size: 56px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }}
+        .stats-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 600px; margin: 0 auto 24px; }}
+        .stat-card {{ background: var(--bg-white); padding: 24px; border-radius: 20px; box-shadow: var(--shadow-md); }}
+        .stat-val {{ font-size: 34px; font-weight: 800; color: var(--text-dark); }}
+
         .question-nav-toggle {{ position: fixed; bottom: 105px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; z-index: 85; box-shadow: 0 8px 25px var(--primary-glow); }}
-        .question-nav-panel {{ position: fixed; bottom: 0; left: 0; right: 0; height: 40vh; overflow-y: auto; background: var(--bg-white); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); z-index: 95; transform: translateY(110%); transition: 0.35s; padding: 18px; visibility: hidden; }}
+        .question-nav-panel {{ position: fixed; bottom: 0; left: 0; right: 0; height: 35vh;max-height: 35vh; overflow-y: auto; background: var(--bg-white); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); z-index: 95; transform: translateY(110%); transition: transform 0.35s ease; padding: 18px; visibility: hidden; }}
         .question-nav-panel.open {{ transform: translateY(0); visibility: visible; }}
         .question-grid {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }}
-        .question-nav-item {{ aspect-ratio: 1; border: 3px solid var(--border); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; }}
+        .question-nav-item {{ aspect-ratio: 1; border: 3px solid var(--border); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; color: var(--text-light); }}
         .question-nav-item.current {{ border-color: var(--primary); color: var(--primary); }}
         .question-nav-item.answered {{ background: var(--primary); color: white; border: none; }}
-        
-        .section-filter {{ width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 15px; font-family: inherit; font-weight: 600; color: var(--text-dark); }}
+        .question-nav-item.marked {{ background: var(--warning); color: white; border: none; }}
+        .question-nav-item.correct {{ background: var(--success); color: white; border: none; }}
+        .question-nav-item.incorrect {{ background: var(--danger); color: white; border: none; }}
         
         img {{ max-width: 100%; border-radius: 12px; margin-top: 15px; }}
-        .hidden {{ display: none !important; }}
     </style>
 </head>
-<body data-lang="en">
+<body>
     <div id="modeSelection">
         <div class="mode-container">
             <div class="mode-header">
@@ -87,12 +100,12 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
             </div>
             <div class="mode-cards">
                 <div class="mode-card exam-mode" onclick="setMode('exam', this)">
-                    <div style="background:#EF4444; width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fas fa-file-alt"></i></div>
-                    <div><h3 style="font-size:17px;">🎯 Exam Mode</h3><p style="font-size:13px; color:var(--text-light);">Results at end</p></div>
+                    <div class="mode-icon"><i class="fas fa-file-alt"></i></div>
+                    <div><h3 style="font-size:17px;">ðŸŽ¯ Exam Mode</h3><p style="font-size:13px; color:var(--text-light);">Results at end</p></div>
                 </div>
                 <div class="mode-card practice-mode" onclick="setMode('practice', this)">
-                    <div style="background:#10B981; width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;"><i class="fas fa-book-open"></i></div>
-                    <div><h3 style="font-size:17px;">📚 Practice Mode</h3><p style="font-size:13px; color:var(--text-light);">Instant feedback</p></div>
+                    <div class="mode-icon"><i class="fas fa-book-open"></i></div>
+                    <div><h3 style="font-size:17px;">ðŸ“š Practice Mode</h3><p style="font-size:13px; color:var(--text-light);">Instant feedback</p></div>
                 </div>
             </div>
             <input type="number" id="customTimer" style="width:100%; padding:16px; border:3px solid var(--border); border-radius:14px; margin-bottom:20px;" placeholder="Timer (Minutes) - Default 60">
@@ -101,18 +114,42 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
     </div>
 
     <div id="quizContainer">
-        <div class="quiz-header">
-            <div class="header-top">
-                <div>
-                    <span id="activeSectionName" class="sec-badge">General</span>
-                    <div style="font-weight:700; font-size:14px; color:var(--text-dark); max-width:180px; overflow:hidden; white-space:nowrap;">{title}</div>
+    <div class="quiz-header">
+        <div class="header-top">
+            <div style="font-weight:700; font-size:14px; color:var(--text-dark); max-width:180px; overflow:hidden; white-space:nowrap;">{title}</div>
+
+            <div class="header-actions" style="display:flex; gap:10px; align-items:center;">
+
+                <!-- Section Button -->
+                <button onclick="openSectionPanel()" 
+                style="padding:8px 12px;border-radius:10px;border:2px solid var(--border);
+                background:var(--bg-light);cursor:pointer;font-weight:600;">
+                Sections
+                </button>
+
+                <!-- Language Button -->
+                <button onclick="toggleLang()" 
+                style="padding:8px 12px;border-radius:10px;border:2px solid var(--border);
+                background:var(--bg-light);cursor:pointer;font-weight:600;">
+                EN / HI
+                </button>
+
+                <!-- Dark Mode -->
+                <button onclick="toggleTheme()" 
+                style="width:40px;height:40px;border-radius:12px;border:2px solid var(--border);
+                background:var(--bg-light);cursor:pointer;">
+                <i class="fas fa-moon"></i>
+                </button>
+
+                <!-- Timer -->
+                <div class="timer-display">
+                    <i class="fas fa-stopwatch"></i>
+                    <span id="timeText">00:00</span>
                 </div>
-                <div class="header-actions" style="display:flex; gap:10px; align-items:center;">
-                    <button class="lang-toggle-btn" onclick="toggleLang()" id="langBtn">EN</button>
-                    <button onclick="toggleTheme()" style="width:40px; height:40px; border-radius:12px; border:2px solid var(--border); background:var(--bg-light); cursor:pointer;"><i class="fas fa-moon"></i></button>
-                    <div class="timer-display"><i class="fas fa-stopwatch"></i> <span id="timeText">00:00</span></div>
-                </div>
+
             </div>
+        </div>
+
             <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px; color:var(--text-light);">
                 <span id="pText">Question 1</span><span id="aText">Attempted: 0/0</span>
             </div>
@@ -126,28 +163,32 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
         </div>
         <button class="question-nav-toggle" onclick="toggleNav()"><i class="fas fa-th"></i></button>
         <div class="question-nav-panel" id="navPanel">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>Navigator</h3><button onclick="toggleNav()" style="border:none; background:none; font-size:24px;">&times;</button></div>
-            <select class="section-filter" id="sectionSelector" onchange="filterQuestions(this.value)">
-                <option value="all">All Sections</option>
-            </select>
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h3>Navigator</h3><button onclick="toggleNav()" style="border:none; background:none; font-size:24px;">&times;</button></div>
             <div class="question-grid" id="qGrid"></div>
         </div>
     </div>
 
     <div id="resultsContainer">
-        <div class="results-card" style="background:white; border-radius:28px; padding:40px; max-width:600px; margin:0 auto; box-shadow:var(--shadow-lg); text-align:center;">
-            <div style="font-size:80px;">🏆</div>
+        <div class="results-card">
+            <div style="font-size:80px;">ðŸ†</div>
             <h2 class="results-title">Quiz Completed!</h2>
-            <div class="results-score" id="resScore" style="font-size:56px; font-weight:800;">0/0</div>
-            <div id="resPercent" style="font-size:22px; font-weight:600; color:var(--text-light); margin-bottom:25px;">0%</div>
-            <button class="nav-btn primary" onclick="reviewMode()" style="width:100%; margin-bottom:10px;">Review Answers</button>
-            <button class="nav-btn secondary" onclick="location.reload()" style="width:100%;">Restart Quiz</button>
+            <div class="results-score" id="resScore">0/0</div>
+            <div id="resPercent" style="font-size:22px; font-weight:600; color:var(--text-light);">0%</div>
         </div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-val" style="color:var(--success);" id="sCorrect">0</div><div style="font-size:13px;">Correct</div></div>
+            <div class="stat-card"><div class="stat-val" style="color:var(--danger);" id="sWrong">0</div><div style="font-size:13px;">Incorrect</div></div>
+        </div>
+        <div style="max-width:600px; margin:0 auto; display:grid; gap:14px;">
+            <button class="nav-btn primary" onclick="reviewMode()" style="padding:18px;">Review Answers</button>
+            <button class="nav-btn secondary" onclick="location.reload()" style="padding:18px;">Restart Quiz</button>
+        </div>
+        <div style="text-align:center; padding:20px; color:var(--text-light);">Made with â¤ï¸ by <b>{created_by}</b></div>
     </div>
 
     <script>
         const rawData = {json_str};
-        const state = {{ current: 0, qs: [], ans: [], marked: [], mode: null, time: 3600, isSub: false, theme: 'light', lang: 'en', sections: {{}}, filter: 'all' }};
+        const state = {{ current: 0, qs: [], allQs: [], ans: [], marked: [], mode: null, time: 3600, isSub: false, theme: 'light' }};
 
         function setMode(m, el) {{
             state.mode = m;
@@ -156,57 +197,106 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
             document.getElementById('startBtn').disabled = false;
         }}
 
-        function toggleLang() {{
-            state.lang = state.lang === 'en' ? 'hi' : 'en';
-            document.body.setAttribute('data-lang', state.lang);
-            document.getElementById('langBtn').innerText = state.lang.toUpperCase();
-            renderQ();
-        }}
+        function toggleTheme() {
+    state.theme = state.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', state.theme);
+}
 
-        function startQuiz() {{
-            const ct = parseInt(document.getElementById('customTimer').value);
-            if(ct > 0) state.time = ct * 60;
-            
-            const data = Array.isArray(rawData) ? rawData : (rawData.data || []);
-            state.qs = data.map((q, idx) => {{
-                // Handle Sections
-                const sName = q.section_name || q.subject || "General";
-                if(!state.sections[sName]) state.sections[sName] = [];
-                state.sections[sName].push(idx);
+let lang = "en";
 
-                return {{
-                    text: q.question.replace(/<style.*?<\\/style>/gs, "").trim(),
-                    opts: [q.option_1, q.option_2, q.option_3, q.option_4, q.option_5].map(o => o ? o.replace(/<style.*?<\\/style>/gs, "").trim() : null).filter(Boolean),
-                    correct: parseInt(q.answer) - 1,
-                    sol: (q.solution_text || q.solution || "No explanation.").replace(/<style.*?<\\/style>/gs, ""),
-                    img: q.image_url || q.question_image || null,
-                    section: sName
-                }};
-            }});
+function toggleLang() {
+    lang = (lang === "en") ? "hi" : "en";
 
-            // Fill Section Dropdown
-            const sel = document.getElementById('sectionSelector');
-            Object.keys(state.sections).forEach(s => {{
-                const opt = document.createElement('option');
-                opt.value = s; opt.innerText = s; sel.appendChild(opt);
-            }});
+    renderQ();
 
-            state.ans = new Array(state.qs.length).fill(null);
-            state.marked = new Array(state.qs.length).fill(false);
-            
-            document.getElementById('modeSelection').style.display = 'none';
-            document.getElementById('quizContainer').style.display = 'block';
-            renderQ();
-            renderGrid();
-            setInterval(() => {{ if(!state.isSub) {{ state.time--; updateTimer(); }} }}, 1000);
-        }}
+    if(lang === "hi"){
+        alert("Language switched to Hindi");
+    } else {
+        alert("Language switched to English");
+    }
+}
+
+/* Section Panel Open */
+function openSectionPanel(){
+    document.getElementById("sectionPanel").style.display = "block";
+}
+
+/* Section Select */
+function selectSection(section){
+
+    document.getElementById("sectionPanel").style.display = "none";
+
+    // All sections
+    if(section === "all"){
+        state.qs = [...state.allQs];
+    }
+    else{
+        state.qs = state.allQs.filter(q => q.section === section);
+    }
+
+    // Reset quiz position
+    state.current = 0;
+
+    // Reset answers
+    state.ans = new Array(state.qs.length).fill(null);
+    state.marked = new Array(state.qs.length).fill(false);
+
+    // Re-render
+    renderQ();
+    renderGrid();
+}
+
+
+        function startQuiz() {
+
+    const ct = parseInt(document.getElementById('customTimer').value);
+    if(ct > 0) state.time = ct * 60;
+
+    const data = Array.isArray(rawData) ? rawData : (rawData.data || []);
+
+    state.qs = data.map(q => ({
+        section: (q.section || "misc").toLowerCase(),
+
+        text_en: (q.question_en || q.question || "").replace(/<style.*?<\/style>/gs,"").replace(/<p.*?>/g,"<div>").replace(/<\/p>/g,"<\/div>").trim(),
+
+        text_hi: (q.question_hi || q.question || "").replace(/<style.*?<\/style>/gs,"").replace(/<p.*?>/g,"<div>").replace(/<\/p>/g,"<\/div>").trim(),
+
+        opts: [q.option_1,q.option_2,q.option_3,q.option_4,q.option_5]
+        .map(o => o ? o.replace(/<p.*?>/g,"").replace(/<\/p>/g,"").trim() : null)
+        .filter(Boolean),
+
+        correct: parseInt(q.answer)-1,
+
+        sol: (q.solution_text || q.solution || "No explanation available.")
+        .replace(/<p.*?>/g,"<div>").replace(/<\/p>/g,"<\/div>"),
+
+        img: q.image_url || q.question_image || null
+    }));
+
+    state.allQs = [...state.qs];
+
+    state.ans = new Array(state.qs.length).fill(null);
+    state.marked = new Array(state.qs.length).fill(false);
+
+    document.getElementById('modeSelection').style.display='none';
+    document.getElementById('quizContainer').style.display='block';
+
+    renderQ();
+    renderGrid();
+
+    setInterval(()=>{
+        if(!state.isSub){
+            state.time--;
+            updateTimer();
+        }
+    },1000);
+}
 
         function renderQ() {{
             const q = state.qs[state.current];
-            document.getElementById('activeSectionName').innerText = q.section;
-            
-            let h = `<div class="question-card">
-                <div class="question-text">${{q.text}}</div>`;
+            let h = `<div class="question-card"><div class="question-number">Question ${{state.current+1}} of ${{state.qs.length}}</div>`;
+            const qText = (lang === "hi") ? q.text_hi : q.text_en;
+h += `<div class="question-text">${qText}</div>`;
             if(q.img) h += `<img src="${{q.img}}">`;
             h += `<div class="options-container">`;
             q.opts.forEach((o, i) => {{
@@ -225,19 +315,15 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
             }});
             h += `</div>`;
             if(((state.mode === 'practice' && state.ans[state.current] !== null) || state.isSub)) {{
-                h += `<div style="display:block; background:#fff; border-left:5px solid #F59E0B; padding:20px; margin-top:24px; border-radius:0 16px 16px 0;">
+                h += `<div class="explanation-box" style="display:block;">
                     <div style="font-weight:800; color:#92400E; margin-bottom:10px;"><i class="fas fa-lightbulb"></i> Explanation</div>
                     <div style="font-size:14px; line-height:1.6; color:green;">${{q.sol}}</div>
                 </div>`;
             }}
             h += `</div>`;
             document.getElementById('qArea').innerHTML = h;
+            document.getElementById('qArea').scrollTop = 0;
             updateUI();
-        }}
-
-        function filterQuestions(val) {{
-            state.filter = val;
-            renderGrid();
         }}
 
         function selectOpt(i) {{
@@ -247,60 +333,114 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
             updateGrid();
         }}
 
+        function toggleMark() {{
+            state.marked[state.current] = !state.marked[state.current];
+            updateGrid();
+            updateUI();
+        }}
+
         function updateUI() {{
             document.getElementById('pText').innerText = `Question ${{state.current+1}}`;
             document.getElementById('aText').innerText = `Attempted: ${{state.ans.filter(a => a !== null).length}}/${{state.qs.length}}`;
             document.getElementById('pBar').style.width = `${{((state.current+1)/state.qs.length)*100}}%`;
+            document.getElementById('markBtn').innerText = state.marked[state.current] ? 'Unmark' : 'Mark';
             document.getElementById('nextBtn').innerHTML = (state.current === state.qs.length-1) ? 'Submit <i class="fas fa-paper-plane"></i>' : 'Next <i class="fas fa-arrow-right"></i>';
         }}
 
+        function nextQ() {{ if(state.current < state.qs.length - 1) {{ state.current++; renderQ(); }} else submitQuiz(); }}
+        function prevQ() {{ if(state.current > 0) {{ state.current--; renderQ(); }} }}
+        function toggleNav() {{ document.getElementById('navPanel').classList.toggle('open'); }}
+
         function renderGrid() {{
-            const grid = document.getElementById('qGrid');
-            grid.innerHTML = '';
-            state.qs.forEach((q, i) => {{
-                if(state.filter !== 'all' && q.section !== state.filter) return;
-                const div = document.createElement('div');
-                div.className = 'question-nav-item';
-                div.id = `nav-${{i}}`;
-                div.innerText = i + 1;
-                div.onclick = () => goTo(i);
-                grid.appendChild(div);
-            }});
+            document.getElementById('qGrid').innerHTML = state.qs.map((_, i) => `<div class="question-nav-item" id="nav-${{i}}" onclick="goTo(${{i}})">${{i+1}}</div>`).join('');
             updateGrid();
         }}
 
         function updateGrid() {{
             state.qs.forEach((_, i) => {{
                 const el = document.getElementById(`nav-${{i}}`);
-                if(!el) return;
                 el.className = "question-nav-item";
                 if(i === state.current) el.classList.add('current');
-                if(state.ans[i] !== null) el.classList.add('answered');
+                if(state.isSub) {{
+                    if(state.ans[i] === state.qs[i].correct) el.classList.add('correct');
+                    else if(state.ans[i] !== null) el.classList.add('incorrect');
+                }} else {{
+                    if(state.ans[i] !== null) el.classList.add('answered');
+                    else if(state.marked[i]) el.classList.add('marked');
+                }}
             }});
         }}
 
-        function nextQ() {{ if(state.current < state.qs.length - 1) {{ state.current++; renderQ(); }} else submitQuiz(); }}
-        function prevQ() {{ if(state.current > 0) {{ state.current--; renderQ(); }} }}
-        function toggleNav() {{ document.getElementById('navPanel').classList.toggle('open'); }}
         function goTo(i) {{ state.current = i; renderQ(); toggleNav(); }}
         function updateTimer() {{
             let m = Math.floor(state.time/60), s = state.time%60;
             document.getElementById('timeText').innerText = `${{m.toString().padStart(2,'0')}}:${{s.toString().padStart(2,'0')}}`;
             if(state.time <= 0) submitQuiz();
         }}
+
         function submitQuiz() {{
             if(!state.isSub && !confirm("Submit Quiz?")) return;
             state.isSub = true;
             let c = state.ans.filter((a, i) => a === state.qs[i].correct).length;
+            let w = state.ans.filter((a, i) => a !== null && a !== state.qs[i].correct).length;
             document.getElementById('quizContainer').style.display = 'none';
             document.getElementById('resultsContainer').style.display = 'block';
             document.getElementById('resScore').innerText = `${{c}} / ${{state.qs.length}}`;
             document.getElementById('resPercent').innerText = `${{((c/state.qs.length)*100).toFixed(1)}}%`;
+            document.getElementById('sCorrect').innerText = c;
+            document.getElementById('sWrong').innerText = w;
         }}
-        function reviewMode() {{ document.getElementById('resultsContainer').style.display = 'none'; document.getElementById('quizContainer').style.display = 'block'; state.current = 0; renderQ(); updateGrid(); }}
-        function toggleTheme() {{ state.theme = state.theme === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', state.theme); }}
-        function toggleMark() {{ state.marked[state.current] = !state.marked[state.current]; updateUI(); }}
-    </script>
+
+         function reviewMode() {{ 
+    document.getElementById('resultsContainer').style.display = 'none'; 
+    document.getElementById('quizContainer').style.display = 'block'; 
+    state.current = 0; 
+    renderQ(); 
+    updateGrid(); 
+}}
+
+</script>
+
+<!-- SECTION PANEL -->
+<div id="sectionPanel" style="
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:#1E293B;
+color:white;
+border-radius:25px 25px 0 0;
+padding:10px;
+display:none;
+z-index:9999;
+">
+
+<div style="padding:18px;border-bottom:1px solid #444;" onclick="selectSection('all')">
+All Sections
+</div>
+
+<div style="padding:18px;border-bottom:1px solid #444;" onclick="selectSection('quant')">
+Quantitative Aptitude
+</div>
+
+<div style="padding:18px;border-bottom:1px solid #444;" onclick="selectSection('reasoning')">
+Reasoning
+</div>
+
+<div style="padding:18px;border-bottom:1px solid #444;" onclick="selectSection('gs')">
+GS
+</div>
+
+<div style="padding:18px;border-bottom:1px solid #444;" onclick="selectSection('english')">
+English
+</div>
+
+<div style="padding:18px;" onclick="selectSection('misc')">
+Miscellaneous
+</div>
+
+</div>
+
 </body>
 </html>'''
     return html
