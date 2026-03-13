@@ -4,7 +4,7 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
     # JSON data string for injection
     json_str = json.dumps(json_raw_data)
     
-    html = f'''<!DOCTYPE html>
+    html = '''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -443,4 +443,4 @@ Miscellaneous
 
 </body>
 </html>'''
-    return html
+    return html.format(title=title, created_by=created_by)
