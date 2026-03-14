@@ -1,12 +1,12 @@
 import json
 
 def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
-# JSON data string for injection
-json_str = json.dumps(json_raw_data)
+    # JSON data string for injection
+    json_str = json.dumps(json_raw_data, ensure_ascii=False)
 
-html = f'''<!DOCTYPE html>
+    html = f'''<!DOCTYPE html>
 
-<html lang="en">  
+<html lang="en">
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
