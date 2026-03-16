@@ -227,12 +227,16 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
         updateUI();  
     }}  
 
-    function selectOpt(i) {{  
-        if(state.ans[state.current] !== null || state.isSub) return;  
-        state.ans[state.current] = i;  
-        renderQ();  
-        updateGrid();  
-    }}  
+    function selectOpt(i) {
+    if(state.isSub) return;
+
+    // practice mode me same
+    if(state.mode === "practice" && state.ans[state.current] !== null) return;
+
+    state.ans[state.current] = i;
+    renderQ();
+    updateGrid();
+}  
 
     function toggleMark() {{  
         state.marked[state.current] = !state.marked[state.current];  
