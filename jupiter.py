@@ -227,7 +227,7 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
         updateUI();  
     }}  
 
-    function selectOpt(i) {
+    function selectOpt(i) {{
     if(state.isSub) return;
 
     // practice mode me same
@@ -236,7 +236,7 @@ def json_to_html(json_raw_data, title="Test Series", created_by="Ram"):
     state.ans[state.current] = i;
     renderQ();
     updateGrid();
-}  
+}}  
 
     function toggleMark() {{  
         state.marked[state.current] = !state.marked[state.current];  
