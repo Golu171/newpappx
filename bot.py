@@ -276,10 +276,12 @@ async def start_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text(f"📂 Topic: {folder_name}", parse_mode=None)
             for t in tests:
                 caption = (
-                    f"🕉 Jai Bajrang bali\n"
-                    f"🏛 Coaching: {creator}\n"
-                    f"📁 Folder: {t['folder']}\n"
-                    f"✅ Test: {t['title']}"
+    f"🕉 Jai Bajrang bali\n"
+    f"🏛 Coaching: {creator}\n"
+    f"📁 Folder: {t['folder']}\n"
+    f"✅ Test: {t['title']}\n\n"
+    f"🚀 Join Telegram:\n"
+    f"👉 https://t.me/MOCK_TEST18"
                 )
                 try:
                     with open(t['path'], 'rb') as f:
